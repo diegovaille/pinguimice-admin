@@ -1,5 +1,7 @@
-name: Deploy pinguimice-admin to OVH (manual)
+name: Deploy pinguimice-admin to OVH
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read

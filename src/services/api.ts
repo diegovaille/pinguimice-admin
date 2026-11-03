@@ -378,6 +378,17 @@ class ApiClient {
         return this.handleResponse<DespesaResponse>(response);
     }
 
+    async downloadDespesaAnexo(id: string): Promise<Blob> {
+        const response = await fetch(config.getApiUrl(`despesas/${id}/anexo`), {
+            headers: this.getAuthHeaders(false),
+            cache: 'no-store',
+        });
+        if (!response.ok) {
+            await this.handleResponse<void>(response);
+        }
+        return response.blob();
+    }
+
     async deleteDespesa(id: string): Promise<void> {
         const url = config.getApiUrl(`despesas/${id}`);
         const response = await fetch(url, {

@@ -7,6 +7,24 @@ import CurrencyInput from '../components/CurrencyInput';
 import type { DespesaResponse } from '../types/api-types';
 
 export default function ExpensesPage() {
+    const downloadAttachment = async (expense: DespesaResponse) => {
+        try {
+            const blob = await api.downloadDespesaAnexo(expense.id);
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const extension = blob.type === 'application/pdf' ? 'pdf' :
+                blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : 'bin';
+            link.href = url;
+            link.download = `anexo-${expense.id}.${extension}`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            // Keep the URL alive until the browser has started reading the download.
+            window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch {
+            toast.error('Não foi possível baixar o anexo. Tente novamente.');
+        }
+    };
     const [expenses, setExpenses] = useState<DespesaResponse[]>([]);
     const [showForm, setShowForm] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -392,12 +410,18 @@ export default function ExpensesPage() {
                                                 {expense.anexoUrl ? (
                                                     <a
                                                         href={expense.anexoUrl}
+                                                        onClick={(event) => {
+                                                            if (expense.anexoUrl?.startsWith('/api/pinguim-admin/despesas/')) {
+                                                                event.preventDefault();
+                                                                void downloadAttachment(expense);
+                                                            }
+                                                        }}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         style={{ color: 'var(--primary)', textDecoration: 'none' }}
                                                     >
                                                         <Download size={16} style={{ display: 'inline', marginRight: '0.25rem' }} />
-                                                        Ver
+                                                        {expense.anexoUrl.startsWith('/api/pinguim-admin/despesas/') ? 'Baixar' : 'Ver'}
                                                     </a>
                                                 ) : '-'}
                                             </td>
